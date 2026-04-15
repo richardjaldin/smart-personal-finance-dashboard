@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Smart Personal Finance Dashboard
 
-## Getting Started
+A **Next.js** (App Router) expense tracker with **Chart.js** visualizations, **Lucide** icons, and **AI insights** via any **OpenAI-compatible** LLM API. Deploy to **Vercel** with minimal configuration.
 
-First, run the development server:
+## Features
+
+- **CRUD** for expenses: amount, category, date, description
+- **Dashboard** with KPIs and recent activity
+- **Table** view for full list with edit/delete
+- **Charts** view: category pie chart and monthly bar chart
+- **AI insights**: patterns, recommendations, and anomaly hints grounded in your data (requires LLM env vars)
+- **Dynamic UI**: data refreshes after every change
+
+## Tech stack
+
+- TypeScript, React 19, Next.js 16
+- [Lucide React](https://lucide.dev/) icons
+- [Chart.js](https://www.chartjs.org/) + [react-chartjs-2](https://react-chartjs-2.js.org/)
+- [Upstash Redis](https://upstash.com/) (REST) for serverless-friendly persistence on Vercel
+- Generic LLM client: `POST /v1/chat/completions` with `Authorization: Bearer`
+
+## Local development
 
 ```bash
+cd smart-personal-finance-dashboard
+npm install
+cp .env.example .env.local
+# Edit .env.local: add LLM_API_KEY for insights; add Redis vars for durable storage
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Without Redis, the API uses **in-memory** storage (sufficient for local testing). A banner explains this when `/api/status` reports memory mode.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment variables
 
-## Learn More
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `UPSTASH_REDIS_REST_URL` | For production persistence | From Upstash (or Vercel Redis integration) |
+| `UPSTASH_REDIS_REST_TOKEN` | With URL above | REST token |
+| `LLM_API_KEY` | For AI insights | API key for your LLM provider |
+| `LLM_API_URL` | Optional | Default `https://api.openai.com/v1` |
+| `LLM_MODEL` | Optional | Default `gpt-4o-mini` |
 
-To learn more about Next.js, take a look at the following resources:
+You can use `OPENAI_API_KEY` / `OPENAI_MODEL` instead of `LLM_*` if you prefer; the server merges them in `lib/llm.ts`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Redis on Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. In the Vercel project, open **Storage** / **Marketplace** and add **Redis** (Upstash).
+2. Link the integration to the project so `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are set automatically, or paste them from the Upstash dashboard into **Settings → Environment Variables**.
 
-## Deploy on Vercel
+### LLM providers
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **OpenAI**: set `LLM_API_KEY` and leave `LLM_API_URL` default (or set explicitly).
+- **Groq**: `LLM_API_URL=https://api.groq.com/openai/v1` and your Groq key.
+- **Azure OpenAI**: set `LLM_API_URL` to your resource’s chat completions endpoint base (per Azure docs) and the deployment name as `LLM_MODEL`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deploy to Vercel
+
+```bash
+npm i -g vercel   # if needed
+vercel
+```
+
+Or connect the Git repository in the Vercel dashboard. Ensure environment variables are set for production.
+
+## API routes
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/expenses` | List expenses |
+| `POST` | `/api/expenses` | Create expense |
+| `PATCH` | `/api/expenses/[id]` | Update expense |
+| `DELETE` | `/api/expenses/[id]` | Delete expense |
+| `POST` | `/api/insights` | Generate AI markdown report |
+| `GET` | `/api/status` | Persistence mode and setup hint |
+
+## License
+
+MIT
