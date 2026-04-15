@@ -1,6 +1,6 @@
 # Smart Personal Finance Dashboard
 
-A **Next.js** (App Router) expense tracker with **Chart.js** visualizations, **Lucide** icons, and **AI insights** via any **OpenAI-compatible** LLM API. Deploy to **Vercel** with minimal configuration.
+A **Next.js** (App Router) expense tracker with **Chart.js** visualizations, **Lucide** icons, and **AI insights** powered by **Groq** (or any OpenAI-compatible API). Deploy to **Vercel** with minimal configuration.
 
 ## Features
 
@@ -17,7 +17,7 @@ A **Next.js** (App Router) expense tracker with **Chart.js** visualizations, **L
 - [Lucide React](https://lucide.dev/) icons
 - [Chart.js](https://www.chartjs.org/) + [react-chartjs-2](https://react-chartjs-2.js.org/)
 - [Upstash Redis](https://upstash.com/) (REST) for serverless-friendly persistence on Vercel
-- Generic LLM client: `POST /v1/chat/completions` with `Authorization: Bearer`
+- **[Groq](https://groq.com/)** for fast inference (OpenAI-compatible `chat/completions`; configurable to other providers)
 
 ## Local development
 
@@ -25,7 +25,7 @@ A **Next.js** (App Router) expense tracker with **Chart.js** visualizations, **L
 cd smart-personal-finance-dashboard
 npm install
 cp .env.example .env.local
-# Edit .env.local: add LLM_API_KEY for insights; add Redis vars for durable storage
+# Edit .env.local: add GROQ_API_KEY for insights; add KV_* for Redis storage
 npm run dev
 ```
 
@@ -37,24 +37,24 @@ Without Redis, the API uses **in-memory** storage (sufficient for local testing)
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `UPSTASH_REDIS_REST_URL` | For production persistence | From Upstash (or Vercel Redis integration) |
-| `UPSTASH_REDIS_REST_TOKEN` | With URL above | REST token |
-| `LLM_API_KEY` | For AI insights | API key for your LLM provider |
-| `LLM_API_URL` | Optional | Default `https://api.openai.com/v1` |
-| `LLM_MODEL` | Optional | Default `gpt-4o-mini` |
+| `KV_REST_API_URL` | For production persistence | From Upstash (or Vercel Redis / KV integration) |
+| `KV_REST_API_TOKEN` | With URL above | REST token |
+| `GROQ_API_KEY` | For AI insights (recommended) | From [Groq Console](https://console.groq.com/keys) |
+| `LLM_API_URL` | Optional | Default `https://api.groq.com/openai/v1` |
+| `LLM_MODEL` | Optional | Default `llama-3.3-70b-versatile` |
 
-You can use `OPENAI_API_KEY` / `OPENAI_MODEL` instead of `LLM_*` if you prefer; the server merges them in `lib/llm.ts`.
+You can use `LLM_API_KEY` or `OPENAI_API_KEY` instead of `GROQ_API_KEY`; the server merges keys in `lib/llm.ts`. Set `LLM_API_URL` / `LLM_MODEL` to switch providers (e.g. OpenAI).
 
 ### Redis on Vercel
 
 1. In the Vercel project, open **Storage** / **Marketplace** and add **Redis** (Upstash).
-2. Link the integration to the project so `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are set automatically, or paste them from the Upstash dashboard into **Settings → Environment Variables**.
+2. Link the integration to the project so `KV_REST_API_URL` and `KV_REST_API_TOKEN` are set automatically (Vercel’s default names), or paste them from the Upstash dashboard into **Settings → Environment Variables**.
 
 ### LLM providers
 
-- **OpenAI**: set `LLM_API_KEY` and leave `LLM_API_URL` default (or set explicitly).
-- **Groq**: `LLM_API_URL=https://api.groq.com/openai/v1` and your Groq key.
-- **Azure OpenAI**: set `LLM_API_URL` to your resource’s chat completions endpoint base (per Azure docs) and the deployment name as `LLM_MODEL`.
+- **Groq (default)**: set `GROQ_API_KEY`. Defaults use `https://api.groq.com/openai/v1` and `llama-3.3-70b-versatile` (override with `LLM_API_URL` / `LLM_MODEL` if you prefer another Groq model).
+- **OpenAI**: `LLM_API_URL=https://api.openai.com/v1`, `LLM_MODEL=gpt-4o-mini`, and `LLM_API_KEY` or `OPENAI_API_KEY`.
+- **Azure OpenAI**: set `LLM_API_URL` to your resource’s chat completions base URL and the deployment name as `LLM_MODEL`.
 
 ## Deploy to Vercel
 

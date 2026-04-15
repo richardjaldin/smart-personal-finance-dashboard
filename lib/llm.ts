@@ -9,20 +9,28 @@ export type LlmConfig = {
   model: string;
 };
 
+/** Defaults target Groq’s OpenAI-compatible API (https://console.groq.com/). */
+const DEFAULT_GROQ_BASE = "https://api.groq.com/openai/v1";
+const DEFAULT_GROQ_MODEL = "llama-3.3-70b-versatile";
+
 export function getLlmConfigFromEnv(): LlmConfig | null {
-  const apiKey = process.env.LLM_API_KEY ?? process.env.OPENAI_API_KEY;
+  const apiKey =
+    process.env.GROQ_API_KEY ??
+    process.env.LLM_API_KEY ??
+    process.env.OPENAI_API_KEY;
   if (!apiKey) return null;
   const baseUrl =
-    process.env.LLM_API_URL?.replace(/\/$/, "") ??
-    "https://api.openai.com/v1";
+    process.env.LLM_API_URL?.replace(/\/$/, "") ?? DEFAULT_GROQ_BASE;
   const model =
-    process.env.LLM_MODEL ?? process.env.OPENAI_MODEL ?? "gpt-4o-mini";
+    process.env.LLM_MODEL ??
+    process.env.OPENAI_MODEL ??
+    DEFAULT_GROQ_MODEL;
   return { apiKey, baseUrl, model };
 }
 
 /**
- * OpenAI-compatible chat completions. Works with OpenAI, Azure OpenAI
- * (chat path), Groq, Together, local Ollama with OpenAI shim, etc.
+ * OpenAI-compatible chat completions (Groq by default; also works with OpenAI,
+ * Azure, Together, Ollama shims, etc.).
  */
 export async function chatCompletion(
   messages: ChatMessage[],

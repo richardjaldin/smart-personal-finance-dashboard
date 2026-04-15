@@ -12,7 +12,7 @@ export async function POST() {
     return NextResponse.json(
       {
         error:
-          "LLM not configured. Set LLM_API_KEY (or OPENAI_API_KEY) in environment variables.",
+          "LLM not configured. Set GROQ_API_KEY (or LLM_API_KEY) in environment variables.",
       },
       { status: 503 }
     );

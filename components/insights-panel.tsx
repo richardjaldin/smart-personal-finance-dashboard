@@ -48,7 +48,8 @@ export function InsightsPanel({ onGenerate }: Props) {
       </div>
       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
         Patterns, budget-style suggestions, and anomalies based on your stored
-        expenses. Requires LLM API keys in the environment.
+        expenses. Requires a Groq API key (or set LLM_API_URL / LLM_MODEL for
+        another OpenAI-compatible provider).
       </p>
       {error && (
         <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900/60 dark:bg-red-950/50 dark:text-red-200">
